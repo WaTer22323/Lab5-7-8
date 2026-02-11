@@ -10,32 +10,33 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig {
+public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests((requests) -> requests
-                // *** จุดสำคัญ: อนุญาตให้เข้าหน้า /register และ /login ได้โดยไม่ต้องล็อกอิน ***
-                .requestMatchers("/register", "/login", "/css/**", "/js/**").permitAll()
-                // หน้าอื่นๆ (เช่น /greet) ต้องล็อกอินก่อนถึงจะเข้าได้
+                // 1. อนุญาตให้เข้าถึงหน้าเหล่านี้ได้ โดยไม่ต้อง Login
+                .requestMatchers("/", "/home", "/register", "/registration", "/css/**", "/js/**", "/images/**").permitAll()
+                // 2. หน้าอื่นๆ นอกเหนือจากนี้ ต้อง Login ก่อน
                 .anyRequest().authenticated()
             )
             .formLogin((form) -> form
-                .loginPage("/login") // บอก Spring ว่าเรามีหน้า Login ที่ทำเองอยู่ที่ path นี้
-                .defaultSuccessUrl("/greet", true) // ล็อกอินสำเร็จ ให้เด้งไปหน้า /greet เสมอ
+                .loginPage("/login") // กำหนดหน้า Login ของเราเอง
+                .defaultSuccessUrl("/greet", true) // Login สำเร็จให้ไปหน้า greet
                 .permitAll()
             )
             .logout((logout) -> logout
+                .logoutSuccessUrl("/login?logout") // Logout เสร็จกลับมาหน้า Login
                 .permitAll()
             );
 
         return http.build();
     }
 
+    // จำเป็นต้องมี Bean นี้เพื่อให้ CustomUserDetailsService เรียกใช้
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // ใช้การเข้ารหัสรหัสผ่านแบบ BCrypt (มาตรฐาน)
         return new BCryptPasswordEncoder();
     }
 }

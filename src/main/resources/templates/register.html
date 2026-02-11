@@ -5,57 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Page</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .registration-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
-        }
-        .registration-container h2 { margin-bottom: 20px; }
-        .registration-container input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box; /* เพิ่มเพื่อให้ padding ไม่ดัน size */
-        }
-        .registration-container button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .registration-container button:hover { background-color: #218838; }
-        .error { color: red; margin-top: 10px; }
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 300px; text-align: center; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="registration-container">
-        <h2>Register</h2>
-        <form th:action="@{/register}" method="post">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+    <div class="container">
+        <h2>Register New Account</h2>
+        
+        <form th:action="@{/register}" method="post" th:object="${user}">
+            
+            <h3>Login Info</h3>
+            <input type="text" th:field="*{username}" placeholder="Username (สำหรับเข้าระบบ)" required>
+            <input type="password" th:field="*{password}" placeholder="Password" required>
+
+            <hr>
+
+            <h3>Personal Info</h3>
+            <input type="text" th:field="*{firstName}" placeholder="First Name" required>
+            <input type="text" th:field="*{lastName}" placeholder="Last Name" required>
+            <input type="email" th:field="*{email}" placeholder="Email" required>
+            
+            <label>Date of Birth:</label>
+            <input type="date" th:field="*{dob}">
+
+            <label>Country:</label>
+            <select th:field="*{country}">
+                <option value="Thailand">Thailand</option>
+                <option value="USA">USA</option>
+                <option value="Japan">Japan</option>
+            </select>
+
+            <br><br>
             <button type="submit">Register</button>
         </form>
-
-        <div th:if="${param.error}" class="error">
-            Username already exists
-        </div>
 
         <p>Already have an account? <a href="/login">Login here</a></p>
     </div>

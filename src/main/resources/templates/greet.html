@@ -3,13 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Greeting Page</title>
+    <title>Welcome</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .profile-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            width: 400px;
+            text-align: center;
+        }
+        .card-header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 30px 20px;
+        }
+        .card-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .card-header p {
+            margin: 5px 0 0;
+            opacity: 0.8;
+        }
+        .card-body {
+            padding: 30px;
+            text-align: left;
+        }
+        .info-row {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+            display: block;
+        }
+        .info-value {
+            color: #333;
+            font-size: 16px;
+        }
+        .logout-btn {
+            display: block;
+            width: 80%;
+            margin: 0 auto 30px;
+            padding: 12px;
+            background-color: #ff4757;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #ff6b81;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello, <span th:text="${username}"></span>!</h1>
 
-    <form th:action="@{/logout}" method="post">
-        <button type="submit">Logout</button>
-    </form>
+    <div class="profile-card">
+        <div class="card-header">
+            <h1>Hello, <span th:text="${user.username}">User</span>!</h1>
+            <p>Welcome to your dashboard</p>
+        </div>
+
+        <div class="card-body">
+            <div class="info-row">
+                <span class="info-label">Full Name</span>
+                <span class="info-value" th:text="${user.firstName} + ' ' + ${user.lastName}">John Doe</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value" th:text="${user.email}">email@example.com</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Date of Birth</span>
+                <span class="info-value" th:text="${user.dob}">2000-01-01</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Country</span>
+                <span class="info-value" th:text="${user.country}">Thailand</span>
+            </div>
+        </div>
+
+        <form th:action="@{/logout}" method="post">
+            <button class="logout-btn" type="submit">Logout</button>
+        </form>
+    </div>
+
 </body>
 </html>

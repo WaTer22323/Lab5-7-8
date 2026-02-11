@@ -14,31 +14,36 @@ import com.example.mvcwebdemo.model.User;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    // ใช้ Map จำลอง Database เก็บ user
-    private final Map<String, String> users = new HashMap<>();
+    // เปลี่ยนจาก Map<String, String> เป็น Map<String, User> เพื่อเก็บข้อมูลทั้งหมด
+    private final Map<String, User> users = new HashMap<>();
     private final PasswordEncoder passwordEncoder;
 
     public CustomUserDetailsService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ฟังก์ชันสำหรับลงทะเบียนผู้ใช้ใหม่
     public void registerUser(User user) {
         // เข้ารหัสรหัสผ่านก่อนเก็บ
-        users.put(user.getUsername(), passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // บันทึก User ทั้งก้อนลง Map
+        users.put(user.getUsername(), user);
     }
 
-    // ฟังก์ชันที่ Spring Security ใช้ตรวจสอบตอน Login
+    // เพิ่มฟังก์ชันสำหรับดึงข้อมูล User ไปโชว์หน้าเว็บ
+    public User getUser(String username) {
+        return users.get(username);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if (!users.containsKey(username)) {
+        User user = users.get(username);
+        if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
         
-        // สร้าง UserDetails object ส่งกลับให้ Spring Security ตรวจสอบ
         return org.springframework.security.core.userdetails.User
-                .withUsername(username)
-                .password(users.get(username))
+                .withUsername(user.getUsername())
+                .password(user.getPassword())
                 .roles("USER")
                 .build();
     }
