@@ -1,88 +1,113 @@
 package com.example.mvcwebdemo.controller;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import com.example.mvcwebdemo.model.RegistrationForm; // Model สำหรับ Login (Lab 7)
-import com.example.mvcwebdemo.model.User; // Model แบบฟอร์มทั่วไป (Lab เก่า)
+import com.example.mvcwebdemo.model.RegistrationForm;
+import com.example.mvcwebdemo.model.User;
 import com.example.mvcwebdemo.service.CustomUserDetailsService;
 
 import jakarta.validation.Valid;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class MvcwebdemoController {
 
     private final CustomUserDetailsService userDetailsService;
+    private final AuthenticationManager authenticationManager;
 
-    // Inject Service เข้ามาผ่าน Constructor
-    public MvcwebdemoController(CustomUserDetailsService userDetailsService) {
+    public MvcwebdemoController(CustomUserDetailsService userDetailsService,
+                                AuthenticationManager authenticationManager) {
         this.userDetailsService = userDetailsService;
+        this.authenticationManager = authenticationManager;
     }
 
-    // ---------------------------------------------------------
-    // ส่วนที่ 1: หน้าทั่วไป (Home)
-    // ---------------------------------------------------------
+    // -------------------------------------------------
+    // HOME
+    // -------------------------------------------------
     @GetMapping("/")
     public String home() {
         return "index";
     }
 
-    // ---------------------------------------------------------
-    // ส่วนที่ 2: Spring Security (Login & Register User) -> Lab 7
-    // ---------------------------------------------------------
-
+    // -------------------------------------------------
+    // LOGIN (Spring Security)
+    // -------------------------------------------------
     @GetMapping("/login")
     public String login() {
         return "login";
     }
 
-    @GetMapping("/greet")
-    public String greet(Authentication authentication, Model model) {
-        model.addAttribute("username", authentication.getName());
-        return "greet";
+    // -------------------------------------------------
+    // AFTER LOGIN -> เช็ค ROLE (Lab 8)
+    // -------------------------------------------------
+    @GetMapping("/home")
+    public String afterLogin(Model model) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+
+        model.addAttribute("username", username);
+
+        if ("ROLE_ADMIN".equals(role)) {
+            return "admin";
+        }
+        return "viewer";
     }
 
-    // หน้าฟอร์มสมัครสมาชิก (สำหรับ User Login)
+    // -------------------------------------------------
+    // REGISTER (Lab 8)
+    // -------------------------------------------------
     @GetMapping("/register")
-    public String showUserRegistrationForm(Model model) {
+    public String showRegisterForm(Model model) {
         model.addAttribute("user", new User());
-        return "register"; // ต้องมีไฟล์ register.html
+        return "register";
     }
 
-    // รับค่าสมัครสมาชิก (User Login)
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute User user) {
-        userDetailsService.registerUser(user);
-        return "redirect:/login"; 
+    public String registerUser(@RequestParam String username,
+                               @RequestParam String password,
+                               @RequestParam String role) {
+
+        try {
+            userDetailsService.registerUser(username, password, role);
+        } catch (Exception e) {
+            return "redirect:/register?error";
+        }
+
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        return "redirect:/login?success";
     }
 
-    // ---------------------------------------------------------
-    // ส่วนที่ 3: แบบฟอร์มทั่วไป (RegistrationForm) -> Lab เก่า
-    // ---------------------------------------------------------
-
-    // ส่งฟอร์มทั่วไป
+    // -------------------------------------------------
+    // LAB เก่า: RegistrationForm
+    // -------------------------------------------------
     @GetMapping("/registration")
     public String showGeneralRegistrationForm(Model model) {
         model.addAttribute("registrationForm", new RegistrationForm());
-        return "registration"; // ต้องมีไฟล์ registration.html
+        return "registration";
     }
 
-    // *** จุดที่แก้ไข: เปลี่ยน URL เป็น /registration เพื่อไม่ให้ชนกับ /register ด้านบน ***
-    @PostMapping("/registration") 
-    public String handleGeneralRegistration(@Valid RegistrationForm registrationForm,
-                                            BindingResult bindingResult,
-                                            Model model) {
-        // ถ้ามี Error
+    @PostMapping("/registration")
+    public String handleGeneralRegistration(
+            @Valid @ModelAttribute RegistrationForm registrationForm,
+            BindingResult bindingResult,
+            Model model) {
+
         if (bindingResult.hasErrors()) {
             return "registration";
         }
 
-        // ถ้าผ่าน ส่งไปหน้า success
         model.addAttribute("firstName", registrationForm.getFirstName());
         model.addAttribute("lastName", registrationForm.getLastName());
         model.addAttribute("country", registrationForm.getCountry());
