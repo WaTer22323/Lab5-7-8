@@ -6,11 +6,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity
 public class WebSecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
@@ -21,35 +23,33 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/register").permitAll()
-                .requestMatchers("/admin").hasRole("ADMIN")
-                .requestMatchers("/viewer").hasRole("STAFF")
-                .anyRequest().authenticated()
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/register", "/login", "/success").permitAll() // เข้าได้ทุกคน
+                .requestMatchers("/admin").hasRole("ADMIN")         // เฉพาะ ADMIN
+                .requestMatchers("/viewer").hasRole("STAFF")        // เฉพาะ STAFF
+                .requestMatchers("/employee").authenticated()        // เข้าได้เมื่อ login แล้ว
+                .anyRequest().authenticated()                       // หน้าอื่นต้อง Login
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/home", true)
+                .defaultSuccessUrl("/home", true) // Login สำเร็จไปที่ /home (Controller จะแยกหน้าให้เอง)
                 .permitAll()
             )
-            .logout(logout -> logout.permitAll());
-
+            .logout(logout -> logout
+                .permitAll()
+            );
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http)
-            throws Exception {
-
-        AuthenticationManagerBuilder builder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
-
-        builder.userDetailsService(userDetailsService)
-               .passwordEncoder(passwordEncoder());
-
-        return builder.build();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+            http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder
+            .userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder());
+        return authenticationManagerBuilder.build();
     }
 
     @Bean

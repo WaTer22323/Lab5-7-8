@@ -1,14 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viewer Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .welcome {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+    </style>
 </head>
 <body>
-
-<h1>Viewer Page</h1>
-<p>Welcome VIEWER</p>
-
-<a href="/logout">Logout</a>
-
+    <div class="container">
+        <h1>📺 Viewer Dashboard</h1>
+        <p class="welcome">Hello, <span th:text="${username}"></span>!</p>
+        
+        <h2>👗 Clothing Categories</h2>
+        <select name="categories" id="categories">
+            <option value="" disabled selected>Select a category</option>
+            <option value="mens-clothing">Men's Clothing</option>
+            <option value="womens-clothing">Women's Clothing</option>
+            <option value="kids-clothing">Kids' Clothing</option>
+            <option value="shoes">Shoes</option>
+            <option value="accessories">Accessories</option>
+            <option value="sportswear">Sportswear</option>
+        </select>
+        
+        <div class="actions">
+            <a th:href="@{/employee}" class="btn btn-primary">👥 View Employees</a>
+            <form th:action="@{/logout}" method="post" style="flex: 1;">
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">Logout</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
