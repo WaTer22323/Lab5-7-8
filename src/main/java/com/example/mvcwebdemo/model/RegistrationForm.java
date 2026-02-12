@@ -15,6 +15,8 @@ public class RegistrationForm {
     @NotBlank(message = "Country is required")
     private String country;
 
+
+    
     @Past(message = "Date of Birth must be in the past")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dob;
