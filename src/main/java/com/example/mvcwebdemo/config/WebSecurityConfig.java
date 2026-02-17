@@ -26,10 +26,12 @@ public class WebSecurityConfig {
         http
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/register", "/login", "/success").permitAll() // เข้าได้ทุกคน
+                .requestMatchers("/h2-console/**").permitAll() // ให้เข้า Database Console ได้
                 .requestMatchers("/admin").hasRole("ADMIN")         // เฉพาะ ADMIN
                 .requestMatchers("/viewer").hasRole("STAFF")        // เฉพาะ STAFF
                 .requestMatchers("/employee").authenticated()        // เข้าได้เมื่อ login แล้ว
                 .anyRequest().authenticated()                       // หน้าอื่นต้อง Login
+                
             )
             .formLogin(form -> form
                 .loginPage("/login")
@@ -39,6 +41,9 @@ public class WebSecurityConfig {
             .logout(logout -> logout
                 .permitAll()
             );
+        // Allow H2 console frames and disable CSRF for it so the console works
+        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**")); // ปิด CSRF สำหรับ Console
         return http.build();
     }
 

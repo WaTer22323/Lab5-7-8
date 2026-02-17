@@ -1,46 +1,50 @@
 package com.example.mvcwebdemo.service;
 
 import com.example.mvcwebdemo.model.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.example.mvcwebdemo.repository.UserRepository; // Import Repo
+import org.springframework.security.core.userdetails.*;
+import java.util.List;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-    private final Map<String, User> users = new HashMap<>();
+
+    // 1. เรียกใช้ Repository แทน HashMap
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = users.get(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found");
-        }
+        // 2. ค้นหาจาก Database
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
-                .roles(user.getRole()) // ดึง Role มาใส่ตรงนี้
+                .roles(user.getRole())
                 .build();
     }
 
     public void registerUser(String username, String password, String role) throws Exception {
-        if (users.containsKey(username)) {
+        // 3. เช็คว่ามีใน Database หรือยัง
+        if (userRepository.findByUsername(username).isPresent()) {
             throw new Exception("User already exists");
-        } else {
-            String encodedPassword = passwordEncoder.encode(password);
-            users.put(username, new User(username, encodedPassword, role));
         }
+        
+        // 4. บันทึกลง Database
+        String encodedPassword = passwordEncoder.encode(password);
+        User newUser = new User(username, encodedPassword, role);
+        userRepository.save(newUser); // คำสั่ง Save ลง DB จริง
     }
 
     public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+        return userRepository.findAll();
     }
 }
