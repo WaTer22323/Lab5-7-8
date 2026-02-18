@@ -29,7 +29,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll() // ให้เข้า Database Console ได้
                 .requestMatchers("/admin").hasRole("ADMIN")         // เฉพาะ ADMIN
                 .requestMatchers("/viewer").hasRole("STAFF")        // เฉพาะ STAFF
-                .requestMatchers("/employee").authenticated()        // เข้าได้เมื่อ login แล้ว
+                .requestMatchers("/employees/**").authenticated()        // เข้าได้เมื่อ login แล้ว
                 .anyRequest().authenticated()                       // หน้าอื่นต้อง Login
                 
             )
